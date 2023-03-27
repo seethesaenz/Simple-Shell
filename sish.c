@@ -14,7 +14,7 @@ void run(char *args[]) {
     for (int i = 0; args[i] != NULL; i++) {
         printf("args[%d]: %s\n", i, args[i]);
     }
-    
+
     pid_t pid;
     if (strcmp(args[0], "exit") == 0) {
         flag = 0;
@@ -56,7 +56,7 @@ void piper(char *args[]) {
         close(fd[1]);
         waitpid(pid, NULL, 0);
         int i;
-        for(i = 0; i< MAX; i++){
+        for(i = 0; i< sizeof(args)/sizeof(args[0]); i++){
             args[i] = NULL;
         }
     }
