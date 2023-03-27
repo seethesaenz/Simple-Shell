@@ -41,7 +41,7 @@ void clear_history(){
     int i;
     int j = history_start;
     for (i = 0; i < history_count; i++){
-        free(history[j])
+        free(history[j]);
         j = (j + 1) % MAX_HISTORY;
     }
     history_start = 0;
@@ -49,7 +49,7 @@ void clear_history(){
     history_end = 0;
 }
 //history handler
-void history(char *args[]){
+void history_handler(char *args[]){
     if (args[1] == NULL){
         print_history();
     }else if (strcmp(args[1], "-c") == 0){
@@ -85,7 +85,7 @@ void piper(char *args[], int size) {
             perror("Error changing directory");
         }
     }else if(strcmp(args[0], "history") == 0){
-        history(args);
+        history_handler(args);
         break;
     }
     //#number of commands
