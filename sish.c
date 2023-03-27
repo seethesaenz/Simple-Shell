@@ -77,17 +77,31 @@ void piper(char *args[], int size) {
 
 
 char **tokenize(char *input) {
-    int i = 0;
-    char **tokens = malloc(MAX * sizeof(char *));
+    int i = 0, num_tokens = 0;
+    char **tokens;
+
+    // Count the number of tokens in the input
+    for (char *c = input; *c != '\0'; c++) {
+        if (*c == ' ' || *c == '\n') {
+            continue;
+        }
+        num_tokens++;
+        while (*c != ' ' && *c != '\n' && *c != '\0') {
+            c++;
+        }
+    }
+
+    tokens = malloc((num_tokens + 1) * sizeof(char *));
     char *arg = strtok(input, " \n");
     while (arg) {
-        tokens[i] = arg;
-        i++;
+        tokens[i++] = arg;
         arg = strtok(NULL, " \n");
     }
     tokens[i] = NULL;
+
     return tokens;
 }
+
 
 int main(void) {
     char **args;
@@ -106,17 +120,17 @@ int main(void) {
 
         args = tokenize(input);
 
-        int next_arg_index = 0;
-        while (args[next_arg_index]) {
-            if (strcmp(args[next_arg_index], "|") == 0) {
-                args[next_arg_index] = NULL;
-                piper(args, next_arg_index);
-                next_arg_index++;
+        int i = 0;
+        while (args[i]) {
+            if (strcmp(args[i], "|") == 0) {
+                args[i] = NULL;
+                piper(args, i);
+                args += i + 1;
+                i = 0;
             } else {
-                next_arg_index++;
+                i++;
             }
         }
-
 
         run(args);
         free(input);
