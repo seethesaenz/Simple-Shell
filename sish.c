@@ -62,10 +62,10 @@ void piper(char *args[], int size) {
     }
 }
 
-char *tokenize(char *input) {
-    int i;
-    int j = 0;
+char **tokenize(char *input, int *num_cmds) {
+    int i, j = 0;
     char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
+    char **cmds = (char **) malloc(MAX * sizeof(char *));
 
     // clean input to allow for easy reading
     for (i = 0; i < strlen(input); i++) {
@@ -79,19 +79,19 @@ char *tokenize(char *input) {
     }
     cleaned[j++] = '\0';
 
-    // strip leading spaces
-    while (*cleaned == ' ') {
-        cleaned++;
+    // tokenize individual commands
+    char *cmd = strtok(cleaned, "|");
+    i = 0;
+    while (cmd) {
+        cmds[i] = cmd;
+        i++;
+        cmd = strtok(NULL, "|");
     }
+    cmds[i] = NULL;
+    *num_cmds = i;
 
-    // strip trailing spaces
-    char *end = cleaned + strlen(cleaned) - 1;
-    while (*end == ' ') {
-        end--;
-    }
-    *(end + 1) = '\0';
-
-    return cleaned;
+    free(cleaned);
+    return cmds;
 }
 
 
@@ -109,8 +109,10 @@ int main(void) {
 
         char *arg = strtok(tokens, " ");
         int i = 0;
+        int is_piping = 0;
         while (arg) {
             if (*arg == '|') {
+                is_piping = 1;
                 args[i] = NULL;
                 piper(args, i);
                 i = 0;
@@ -122,7 +124,10 @@ int main(void) {
         }
         args[i] = NULL;
 
-        run(args);
+        if (is_piping == 0) {
+            run(args);
+        }
+
         free(input);
     }
     return 0;
