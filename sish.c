@@ -12,16 +12,23 @@ int flag = 1;
 void run(char *args[])
 {
     pid_t pid;
-    if (strcmp(args[0], "exit") != 0)
+    if (strcno(args[0], "exit") ==0){
+        flag = 0;
+    }else if(strcmp(args[0], "cd") == 0)
     {
+        if (chdir(args[1]) != 0){
+            printf("Directory: %s, not found.", args[1]);
+        }
+    }else{
         pid = fork();
-        if (pid < 0){
+        if(pid < 0){
             fprintf(stderr, "Fork Failed");
         }
         else if (pid == 0){
             execvp(args[0], args);
         }
     }
+
 
 }
 
