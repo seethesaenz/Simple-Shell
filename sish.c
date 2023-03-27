@@ -94,9 +94,9 @@ char **tokenize(char *input, int *num_cmds) {
     return cmds;
 }
 
+
 int main(void) {
     char *args[MAX];
-    int num_cmds;
 
     while (flag) {
         printf("sish> ");
@@ -104,36 +104,25 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char **cmds = tokenize(input, &num_cmds);
+        char *tokens;
+        tokens = tokenize(input);
+
+        char *arg = strtok(tokens, " ");
         int i = 0;
-        int is_piping = 0;
-
-        while (i < num_cmds) {
-            char *tokens;
-            tokens = strtok(cmds[i], " ");
-            int j = 0;
-
-            while (tokens != NULL) {
-                if (*tokens == '|') {
-                    is_piping = 1;
-                    args[j] = NULL;
-                    piper(args, j);
-                    j = 0;
-                } else {
-                    args[j] = tokens;
-                    j++;
-                }
-                tokens = strtok(NULL, " ");
+        while (arg) {
+            if (*arg == '|') {
+                args[i] = NULL;
+                piper(args, i);
+                i = 0;
+            } else {
+                args[i] = arg;
+                i++;
             }
-            args[j] = NULL;
-
-            if (is_piping == 0) {
-                run(args);
-            }
-
-            i++;
+            arg = strtok(NULL, " ");
         }
-        free(cmds);
+        args[i] = NULL;
+
+        run(args);
         free(input);
     }
     return 0;
