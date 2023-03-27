@@ -100,7 +100,6 @@ int main(void) {
 
         run(args);
         free(input);
-        free(args);
     }
     return 0;
 }
