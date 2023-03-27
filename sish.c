@@ -203,6 +203,8 @@ int main(void) {
 
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
+        //sending to history
+        add(input);
 
         char *tokens;
         tokens = tokenize(input);
