@@ -31,43 +31,25 @@ void run(char *args[]) {
     }
 }
 
-void piper(char *args[], int fd_in, int fd_out) {
+void piper(char *args[], int fd[]) {
     pid_t pid;
-    int fd[2];
-    pipe(fd);
+    int status;
 
     pid = fork();
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
-        close(fd[0]); // Close unused read end of pipe
-
-        if (fd_in != STDIN_FILENO) {
-            dup2(fd_in, STDIN_FILENO);
-            close(fd_in);
-        }
-
-        if (fd_out != STDOUT_FILENO) {
-            dup2(fd_out, STDOUT_FILENO);
-            close(fd_out);
-        }
-
+        dup2(fd[0], 0);
+        close(fd[0]);
+        close(fd[1]);
         if (execvp(args[0], args) < 0) {
             perror("Error executing command");
             exit(1);
         }
     } else {
-        close(fd[1]); // Close unused write end of pipe
-
-        if (fd_in != STDIN_FILENO) {
-            close(fd_in);
-        }
-
-        if (fd_out != STDOUT_FILENO) {
-            close(fd_out);
-        }
-
-        waitpid(pid, NULL, 0);
+        close(fd[0]);
+        close(fd[1]);
+        waitpid(pid, &status, 0);
     }
 }
 
@@ -98,6 +80,7 @@ char *tokenize(char *input) {
 
 int main(void) {
     char *args[MAX];
+    int fd[2];
 
     while (flag) {
         printf("sish> ");
@@ -113,7 +96,8 @@ int main(void) {
         while (arg) {
             if (*arg == '|') {
                 args[i] = NULL;
-                piper(args);
+                pipe(fd);
+                piper(args, fd);
                 i = 0;
             } else {
                 args[i] = arg;
@@ -123,12 +107,10 @@ int main(void) {
         }
         args[i] = NULL;
 
-        if (args[0] != NULL) {
-            run(args);
-        }
-
+        run(args);
         free(input);
     }
     return 0;
 }
+
 
