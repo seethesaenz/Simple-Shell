@@ -14,6 +14,8 @@ int history_start = 0;
 int history_end = 0;
 int history_count = 0;
 
+void run_history(char *input);
+
 //add entry to history array
 void add(char *cmd){
     //removing oldest entry if full
@@ -86,7 +88,7 @@ void piper(char *args[], int size) {
         }
     }else if(strcmp(args[0], "history") == 0){
         history_handler(args);
-        break;
+        return;
     }
     //#number of commands
     for (i = 0; i < size; i++) {
