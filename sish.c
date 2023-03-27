@@ -48,19 +48,36 @@ void piper(char *args[], int size) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-        run(args);
+
+        // Create a new array to hold the first command for this process
+        char *cmd1[size];
+        for (int i = 0; i < size; i++) {
+            cmd1[i] = args[i];
+        }
+        cmd1[size] = NULL;
+
+        run(cmd1);
         exit(0);
     } else {
         dup2(fd[0], 0);
         close(fd[0]);
         close(fd[1]);
-        waitpid(pid, NULL, 0);
+
+        // Create a new array to hold the second command for this process
+        char *cmd2[size];
         int i;
-        for(i = 0; i< size; i++){
-            args[i] = NULL;
+        for (i = size + 1; args[i] != NULL; i++) {
+            cmd2[i - size - 1] = args[i];
+        }
+        cmd2[i - size - 1] = NULL;
+
+        // Recursively call piper until all commands have been executed
+        if (cmd2[0] != NULL) {
+            piper(cmd2, 0);
         }
     }
 }
+
 
 char *tokenize(char *input) {
     int i;
