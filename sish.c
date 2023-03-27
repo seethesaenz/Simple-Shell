@@ -172,7 +172,7 @@ char *tokenize(char *input) {
     return cleaned;
 }
 //reruns history command at index
-run_history(char *input){
+void run_history(char *input){
     char *args[MAX];
     char *tokens;
     tokens = tokenize(input);
