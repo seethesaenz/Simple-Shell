@@ -50,7 +50,7 @@ void piper(char *args[], int size) {
         close(fd[0]);
 
         // Create a new array to hold the first command for this process
-        char *cmd1[size];
+        char *cmd1[size + 1];
         for (int i = 0; i < size; i++) {
             cmd1[i] = args[i];
         }
@@ -64,7 +64,7 @@ void piper(char *args[], int size) {
         close(fd[1]);
 
         // Create a new array to hold the second command for this process
-        char *cmd2[size];
+        char *cmd2[MAX];
         int i;
         for (i = size + 1; args[i] != NULL; i++) {
             cmd2[i - size - 1] = args[i];
@@ -73,16 +73,17 @@ void piper(char *args[], int size) {
 
         // Recursively call piper until all commands have been executed
         if (cmd2[0] != NULL) {
-            piper(cmd2, 0);
+            piper(cmd2, i - size - 1);
         }
     }
 }
 
 
-char *tokenize(char *input) {
-    int i;
-    int j = 0;
+char **tokenize(char *input, int *num_commands) {
+    int i, j = 0;
     char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
+    char **commands = (char **) malloc(MAX * sizeof(char *));
+    *num_commands = 0;
 
     // clean input to allow for easy reading
     for (i = 0; i < strlen(input); i++) {
@@ -90,18 +91,24 @@ char *tokenize(char *input) {
             cleaned[j++] = ' ';
             cleaned[j++] = input[i];
             cleaned[j++] = ' ';
+            (*num_commands)++;
         } else {
             cleaned[j++] = input[i];
         }
     }
     cleaned[j++] = '\0';
 
-    char *end;
-    end = cleaned + strlen(cleaned) - 1;
-    end--;
-    *(end + 1) = '\0';
+    char *token;
+    int k = 0;
+    token = strtok(cleaned, " \n");
+    while (token != NULL) {
+        commands[k] = token;
+        k++;
+        token = strtok(NULL, " \n");
+    }
+    commands[k] = NULL;
 
-    return cleaned;
+    return commands;
 }
 
 int main(void) {
