@@ -48,42 +48,24 @@ void piper(char *args[], int size) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-
-        // Create a new array to hold the first command for this process
-        char *cmd1[size + 1];
-        for (int i = 0; i < size; i++) {
-            cmd1[i] = args[i];
-        }
-        cmd1[size] = NULL;
-
-        run(cmd1);
+        run(args);
         exit(0);
     } else {
         dup2(fd[0], 0);
         close(fd[0]);
         close(fd[1]);
-
-        // Create a new array to hold the second command for this process
-        char *cmd2[MAX];
+        waitpid(pid, NULL, 0);
         int i;
-        for (i = size + 1; args[i] != NULL; i++) {
-            cmd2[i - size - 1] = args[i];
-        }
-        cmd2[i - size - 1] = NULL;
-
-        // Recursively call piper until all commands have been executed
-        if (cmd2[0] != NULL) {
-            piper(cmd2, i - size - 1);
+        for(i = 0; i< size; i++){
+            args[i] = NULL;
         }
     }
 }
 
-
-char **tokenize(char *input, int *num_commands) {
-    int i, j = 0;
+char *tokenize(char *input) {
+    int i;
+    int j = 0;
     char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
-    char **commands = (char **) malloc(MAX * sizeof(char *));
-    *num_commands = 0;
 
     // clean input to allow for easy reading
     for (i = 0; i < strlen(input); i++) {
@@ -91,30 +73,22 @@ char **tokenize(char *input, int *num_commands) {
             cleaned[j++] = ' ';
             cleaned[j++] = input[i];
             cleaned[j++] = ' ';
-            (*num_commands)++;
         } else {
             cleaned[j++] = input[i];
         }
     }
     cleaned[j++] = '\0';
 
-    char *token;
-    int k = 0;
-    token = strtok(cleaned, " \n");
-    while (token != NULL) {
-        commands[k] = token;
-        k++;
-        token = strtok(NULL, " \n");
-    }
-    commands[k] = NULL;
+    char *end;
+    end = cleaned + strlen(cleaned) - 1;
+    end--;
+    *(end + 1) = '\0';
 
-    return commands;
+    return cleaned;
 }
 
-
 int main(void) {
-    char **args;
-    int num_commands;
+    char *args[MAX];
 
     while (flag) {
         printf("sish> ");
@@ -122,16 +96,26 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        args = tokenize(input, &num_commands);
+        char *tokens;
+        tokens = tokenize(input);
 
-        if (num_commands > 0) {
-            piper(args, num_commands);
-        } else {
-            run(args);
+        char *arg = strtok(tokens, " \n");
+        int i = 0;
+        while (arg) {
+            if (*arg == '|') {
+                args[i] = NULL;
+                piper(args, i);
+                i = 0;
+            } else {
+                args[i] = arg;
+                i++;
+            }
+            arg = strtok(NULL, " \n");
         }
+        args[i] = NULL;
 
+        run(args);
         free(input);
     }
-
     return 0;
 }
