@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define MAX 1024 // max length
 
+
+int MAX = 1024; // max length
 int flag = 1;
 
 void run(char *args[])
@@ -73,8 +74,8 @@ int main(void)
     while (flag){
             printf("sish> ");
 
-            char input[MAX];
-            getline(&input, MAX, stdin);
+            char *input = malloc(MAX * sizeof(char));
+            getline(&input, &MAX, stdin);
 
             char *tokens;
             tokens = tokenize(input);
