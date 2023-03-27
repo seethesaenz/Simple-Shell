@@ -67,21 +67,13 @@ char **tokenize(char *input) {
     char **tokens = malloc(MAX * sizeof(char *));
     char *arg = strtok(input, " \n");
     while (arg) {
-        if (*arg == '|') {
-            tokens[i] = NULL;
-            i++;
-            tokens[i] = arg;
-            i++;
-        } else {
-            tokens[i] = arg;
-            i++;
-        }
+        tokens[i] = arg;
+        i++;
         arg = strtok(NULL, " \n");
     }
     tokens[i] = NULL;
     return tokens;
 }
-
 
 int main(void) {
     char **args;
@@ -96,10 +88,11 @@ int main(void) {
 
         int i = 0;
         while (args[i]) {
-            if (*args[i] == '|') {
+            if (strcmp(args[i], "|") == 0) {
                 args[i] = NULL;
                 piper(args, i);
-                i++;
+                args += i + 1;
+                i = 0;
             } else {
                 i++;
             }
