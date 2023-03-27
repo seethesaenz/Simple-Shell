@@ -2,6 +2,7 @@ CS/SE 3377 Systems Programming in Unix and other Environments
 Introduction
 
 This project is a simple shell program that allows the user to execute commands on their system. It supports basic functionality such as changing directories, executing commands with arguments, and piping commands. In addition, it also includes a history feature that allows the user to access previously executed commands.
+
 Features
 
     Change directories using the cd command.
@@ -16,13 +17,13 @@ Usage
 
 To run the shell program, simply compile the program using the following command:
 
-gcc sish.c -o sish -Wall -Werror -std=gnu99
+    gcc sish.c -o sish -Wall -Werror -std=gnu99
 
 Then, run the program using the following command:
 
 bash
 
-./sish
+    ./sish
 
 Once the program is running, you can execute commands in the shell. The following commands are supported:
 
@@ -35,7 +36,7 @@ To pipe commands together, simply separate the commands with the | operator. For
 
 bash
 
-ls | grep shell | wc -l
+    ls | grep shell | wc -l
 
 To rerun a previously executed command, use the history command to view the command history, then use the index of the command to rerun it. For example:
 
