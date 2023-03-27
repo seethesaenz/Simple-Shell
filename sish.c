@@ -99,15 +99,14 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
+
         char *tokens;
         tokens = tokenize(input);
 
         char *arg = strtok(tokens, " \n");
         int i = 0;
-        int has_pipe = 0;
         while (arg) {
             if (*arg == '|') {
-                has_pipe = 1;
                 args[i] = NULL;
                 piper(args, i);
                 i = 0;
@@ -118,12 +117,10 @@ int main(void) {
             arg = strtok(NULL, " \n");
         }
         args[i] = NULL;
-        if (!has_pipe) {
-            run(args);
-        }
+        run(args);    
 
         free(input);
-    }
 
+    }
     return 0;
 }
