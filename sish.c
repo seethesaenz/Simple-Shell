@@ -12,7 +12,7 @@ int flag = 1;
 void run(char *args[])
 {
     pid_t pid;
-    if (strcno(args[0], "exit") ==0){
+    if (strcmp(args[0], "exit") ==0){
         flag = 0;
     }else if(strcmp(args[0], "cd") == 0)
     {
