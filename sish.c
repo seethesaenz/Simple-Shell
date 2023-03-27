@@ -60,28 +60,33 @@ void piper(char *args[], int size) {
         close(fd[0]);
         close(fd[1]);
         waitpid(pid, NULL, 0);
-        int i;
-        for(i = 0; i< size; i++){
-            args[i] = NULL;
+    }
+}
+
+char *tokenize(char *input) {
+    int i;
+    int j = 0;
+    char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
+
+    // clean input to allow for easy reading
+    for (i = 0; i < strlen(input); i++) {
+        if (input[i] == '|') {
+            cleaned[j++] = ' ';
+            cleaned[j++] = input[i];
+            cleaned[j++] = ' ';
+        } else {
+            cleaned[j++] = input[i];
         }
-        args[size] = NULL;
     }
+    cleaned[j++] = '\0';
+
+    char *end;
+    end = cleaned + strlen(cleaned) - 1;
+    end--;
+    *(end + 1) = '\0';
+
+    return cleaned;
 }
-
-char **tokenize(char *input) {
-    char **commands = (char **) malloc(MAX * sizeof(char *));
-    int i = 0;
-
-    char *command = strtok(input, "|");
-    while (command != NULL) {
-        commands[i++] = command;
-        command = strtok(NULL, "|");
-    }
-    commands[i] = NULL;
-
-    return commands;
-}
-
 
 int main(void) {
     char *args[MAX];
@@ -94,31 +99,27 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char **commands = tokenize(input);
+        char *tokens;
+        tokens = tokenize(input);
 
+        char *arg = strtok(tokens, " \n");
         int i = 0;
-        while (commands[i] != NULL) {
-            char *arg = strtok(commands[i], " \n");
-            int j = 0;
-            while (arg) {
-                args[j++] = arg;
-                arg = strtok(NULL, " \n");
-            }
-
-            if (commands[i+1] != NULL) {
-                // pipe to next command
-                piper(args, j);
+        while (arg) {
+            if (*arg == '|') {
+                args[i] = NULL;
+                piper(args, i);
+                i = 0;
             } else {
-                // last command, don't pipe
-                run(args);
+                args[i] = arg;
+                i++;
             }
-
-            i++;
+            arg = strtok(NULL, " \n");
         }
+        args[i] = NULL;
+        run(args);    
 
         free(input);
-        free(commands);
-    }
 
+    }
     return 0;
 }
