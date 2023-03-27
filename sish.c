@@ -38,19 +38,45 @@ void run(char *args[])
 
 }
 
-void piper(char *args[])
-{
+void piper(char *args[]) {
     int fd[2];
     pipe(fd);
 
-    dup2(fd[1], 1);
-    close(fd[1]);
-    printf("args = %s\n", *args);
+    pid_t pid = fork();
 
-    run(args);
+    if (pid == -1) {
+        perror("Fork failed");
+        exit(1);
+    } else if (pid == 0) {
+        // Child process
+        close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        close(fd[1]);
 
-    dup2(fd[0], 0);
-    close(fd[0]);
+        // Loop through args and print each one individually
+        for (int i = 0; args[i] != NULL; i++) {
+            printf("%s ", args[i]);
+        }
+        printf("\n");
+
+        // Redirect stdin to the read end of the pipe
+        dup2(fd[0], STDIN_FILENO);
+
+        // Execute the command
+        if (execvp(args[0], args) == -1) {
+            perror("Error executing command");
+            exit(1);
+        }
+    } else {
+        // Parent process
+        close(fd[1]);
+
+        // Wait for the child process to finish
+        waitpid(pid, NULL, 0);
+
+        // Close the read end of the pipe
+        close(fd[0]);
+    }
 }
 
 char * tokenize(char *input)
@@ -108,7 +134,9 @@ int main(void)
             }
             args[i] = NULL;
 
-            run(args);
+            if(i>0){
+                run(args);
+            }
             free(input);
     }
     return 0;
