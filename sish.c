@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/wait.h>
 
 size_t MAX =  1024; // max length
