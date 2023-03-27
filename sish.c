@@ -98,6 +98,8 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
+        printf("Input: %s\n", input);
+
         args = tokenize(input);
 
         int i = 0;
