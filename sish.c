@@ -56,11 +56,14 @@ void piper(char *args[], int size) {
         close(fd[0]);
         waitpid(pid, NULL, 0);
         int i;
-        for(i = 0; i< size; i++){
+        for(i = 0; i < size; i++){
             args[i] = NULL;
         }
+        free(args);
     }
+    return;
 }
+
 
 char **tokenize(char *input) {
     int i = 0;
@@ -100,7 +103,6 @@ int main(void) {
 
         run(args);
         free(input);
-        free(args);
     }
     return 0;
 }
