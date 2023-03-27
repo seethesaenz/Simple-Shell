@@ -37,7 +37,7 @@ void run(char *args[]) {
     }
 }
 
-void piper(char *args[]) {
+void piper(char *args[], int size) {
     int fd[2];
     pipe(fd);
 
@@ -56,7 +56,7 @@ void piper(char *args[]) {
         close(fd[1]);
         waitpid(pid, NULL, 0);
         int i;
-        for(i = 0; i< sizeof(args)/sizeof(args[0]); i++){
+        for(i = 0; i< size; i++){
             args[i] = NULL;
         }
     }
@@ -104,7 +104,7 @@ int main(void) {
         while (arg) {
             if (*arg == '|') {
                 args[i] = NULL;
-                piper(args);
+                piper(args, i);
                 i = 0;
             } else {
                 args[i] = arg;
