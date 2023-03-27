@@ -44,15 +44,26 @@ void piper(char *args[], int size) {
     int cmd_start = 0;
     int fd[2];
     int in_fd = 0;
+    //empty line
+    if(args[0] == NULL){
+        return;
+    }
+    //cd
+    if (strcmp(args[0], "exit") == 0){
+        flag = 0;
+    }else if(strcmp(args[0], "cd")==0){
+        if(chdir(args[i]) != -){
+            perror("Error changing directory");
+        }
+    }
 
-    // Count the number of commands
+    // Count the number of commands/pipes
     for (i = 0; i < size; i++) {
         if (args[i] == NULL) {
             num_cmds++;
         }
     }
 
-    // Execute each command
     for (i = 0; i < num_cmds; i++) {
         // Find the start and end of the current command
         cmd_start = j;
