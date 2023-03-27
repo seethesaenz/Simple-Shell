@@ -62,10 +62,10 @@ void piper(char *args[], int size) {
     }
 }
 
-char **tokenize(char *input, int *num_cmds) {
-    int i, j = 0;
+char *tokenize(char *input) {
+    int i;
+    int j = 0;
     char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
-    char **cmds = (char **) malloc(MAX * sizeof(char *));
 
     // clean input to allow for easy reading
     for (i = 0; i < strlen(input); i++) {
@@ -79,21 +79,13 @@ char **tokenize(char *input, int *num_cmds) {
     }
     cleaned[j++] = '\0';
 
-    // tokenize individual commands
-    char *cmd = strtok(cleaned, "|");
-    i = 0;
-    while (cmd) {
-        cmds[i] = cmd;
-        i++;
-        cmd = strtok(NULL, "|");
-    }
-    cmds[i] = NULL;
-    *num_cmds = i;
+    char *end;
+    end = cleaned + strlen(cleaned) - 1;
+    end--;
+    *(end + 1) = '\0';
 
-    free(cleaned);
-    return cmds;
+    return cleaned;
 }
-
 
 int main(void) {
     char *args[MAX];
