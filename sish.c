@@ -64,33 +64,31 @@ void piper(char *args[]) {
 }
 
 
-char *tokenize(char *input) {
-    int i;
-    int j = 0;
-    char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
-
-    // clean input to allow for easy reading
-    for (i = 0; i < strlen(input); i++) {
-        if (input[i] == '|') {
-            cleaned[j++] = ' ';
-            cleaned[j++] = input[i];
-            cleaned[j++] = ' ';
-        } else {
-            cleaned[j++] = input[i];
-        }
+char **tokenize(char *input) {
+    int i, j;
+    char **commands = (char **)malloc(MAX * sizeof(char *));
+    for (i = 0; i < MAX; i++) {
+        commands[i] = (char *)malloc(MAX * sizeof(char));
     }
-    cleaned[j++] = '\0';
-
-    char *end;
-    end = cleaned + strlen(cleaned) - 1;
-    end--;
-    *(end + 1) = '\0';
-
-    return cleaned;
+    char *token = strtok(input, "|");
+    i = 0;
+    while (token != NULL) {
+        j = 0;
+        char *arg = strtok(token, " ");
+        while (arg != NULL) {
+            commands[i][j++] = *arg;
+            arg = strtok(NULL, " ");
+        }
+        commands[i][j] = '\0';
+        token = strtok(NULL, "|");
+        i++;
+    }
+    commands[i] = NULL;
+    return commands;
 }
 
 int main(void) {
-    char *args[MAX];
+    char **commands;
 
     while (flag) {
         printf("sish> ");
@@ -98,25 +96,32 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char *tokens;
-        tokens = tokenize(input);
+        commands = tokenize(input);
 
-        char *arg = strtok(tokens, " ");
         int i = 0;
-        while (arg) {
-            if (*arg == '|') {
-                args[i] = NULL;
-                piper(args);
-                i = 0;
-            } else {
-                args[i] = arg;
-                i++;
+        while (commands[i] != NULL) {
+            char **args = malloc(MAX * sizeof(char *));
+            int j = 0;
+            char *arg = strtok(commands[i], " ");
+            while (arg != NULL) {
+                args[j++] = arg;
+                arg = strtok(NULL, " ");
             }
-            arg = strtok(NULL, " ");
-        }
-        args[i] = NULL;
+            args[j] = NULL;
 
-        run(args);
+            if (args[0] != NULL) {
+                if (*args[0] == '|') {
+                    piper(args);
+                } else {
+                    run(args);
+                }
+            }
+
+            free(args);
+            i++;
+        }
+
+        free(commands);
         free(input);
     }
     return 0;
