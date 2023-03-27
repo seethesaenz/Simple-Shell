@@ -107,23 +107,33 @@ int main(void) {
         char *tokens;
         tokens = tokenize(input);
 
-        char *arg = strtok(tokens, " \n");
+        char *cmd = strtok(tokens, "|");
         int i = 0;
-        while (arg) {
-            if (*arg == '|') {
-                args[i] = NULL;
-                piper(args, i);
-                i = 0;
-            } else {
+        while (cmd) {
+            // Parse arguments for current command
+            char *arg = strtok(cmd, " \n");
+            while (arg) {
                 args[i] = arg;
                 i++;
+                arg = strtok(NULL, " \n");
             }
-            arg = strtok(NULL, " \n");
+            args[i] = NULL;
+
+            // Execute current command
+            if (i > 0) {
+                piper(args, i);
+            }
+
+            // Reset arguments for next command
+            memset(args, 0, sizeof(args));
+            i = 0;
+
+            // Get next command
+            cmd = strtok(NULL, "|");
         }
-        args[i] = NULL;
-        run(args);    
 
         free(input);
     }
+
     return 0;
 }
