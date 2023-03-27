@@ -41,20 +41,31 @@ void piper(char *args[], int size) {
     int fd[2];
     pipe(fd);
 
-    pid_t pid = fork();
-    if (pid < 0) {
+    pid_t pid1 = fork();
+    if (pid1 < 0) {
         perror("Fork Failed");
-    } else if (pid == 0) {
+    } else if (pid1 == 0) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
         execvp(args[0], args);
         exit(0);
     } else {
-        dup2(fd[0], 0);
-        close(fd[0]);
-        close(fd[1]);
-        waitpid(pid, NULL, 0);
+        pid_t pid2 = fork();
+        if (pid2 < 0) {
+            perror("Fork Failed");
+        } else if (pid2 == 0) {
+            dup2(fd[0], 0);
+            close(fd[0]);
+            close(fd[1]);
+            execvp(args[size + 1], args + size + 1);
+            exit(0);
+        } else {
+            close(fd[0]);
+            close(fd[1]);
+            waitpid(pid1, NULL, 0);
+            waitpid(pid2, NULL, 0);
+        }
     }
 }
 
