@@ -45,113 +45,77 @@ void piper(char *args[], int size) {
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
-        close(fd[0]);
         dup2(fd[1], 1);
         close(fd[1]);
+        close(fd[0]);
         run(args);
         exit(0);
     } else {
-        close(fd[1]);
         dup2(fd[0], 0);
         close(fd[0]);
-
-        // Create a copy of args before modifying it
-        char **child_args = malloc((size+1) * sizeof(char *));
-        for (int i = 0; i < size; i++) {
-            child_args[i] = malloc(strlen(args[i]) + 1);
-            strcpy(child_args[i], args[i]);
-        }
-        child_args[size] = NULL;
-
+        close(fd[1]);
         waitpid(pid, NULL, 0);
-
-        // Free the copy of args
-        for (int i = 0; i < size; i++) {
-            free(child_args[i]);
+        int i;
+        for(i = 0; i< size; i++){
+            args[i] = NULL;
         }
-        free(child_args);
     }
-    return;
 }
 
+char *tokenize(char *input) {
+    int i;
+    int j = 0;
+    char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
 
-
-char **tokenize(char *input) {
-    int i = 0, num_tokens = 0;
-    char **tokens;
-
-    // Count the number of tokens in the input
-    for (char *c = input; *c != '\0'; c++) {
-        if (*c == ' ' || *c == '\n' || *c == '|') {
-            continue;
-        }
-        num_tokens++;
-        while (*c != ' ' && *c != '\n' && *c != '|' && *c != '\0') {
-            c++;
+    // clean input to allow for easy reading
+    for (i = 0; i < strlen(input); i++) {
+        if (input[i] == '|') {
+            cleaned[j++] = ' ';
+            cleaned[j++] = input[i];
+            cleaned[j++] = ' ';
+        } else {
+            cleaned[j++] = input[i];
         }
     }
+    cleaned[j++] = '\0';
 
-    tokens = malloc((num_tokens + 1) * sizeof(char *));
-    char *arg = strtok(input, " \n|");
-    while (arg) {
-        tokens[i++] = arg;
-        arg = strtok(NULL, " \n|");
-    }
-    tokens[i] = NULL;
+    char *end;
+    end = cleaned + strlen(cleaned) - 1;
+    end--;
+    *(end + 1) = '\0';
 
-    return tokens;
+    return cleaned;
 }
-
-
 
 int main(void) {
-    char **args;
+    char *args[MAX];
 
     while (flag) {
         printf("sish> ");
 
         char *input = malloc(MAX * sizeof(char));
-        fflush(stdin);
         getline(&input, &MAX, stdin);
 
-        // Remove the newline character from the input
-        input[strcspn(input, "\n")] = '\0';
+        char *tokens;
+        tokens = tokenize(input);
 
-        printf("Input: %s\n", input);
-
-        // Tokenize the input by pipes
-        char **pipe_tokens = tokenize(input, "|");
-        int num_pipes = 0;
-        while (pipe_tokens[num_pipes] != NULL) {
-            num_pipes++;
-        }
-
-        // Create an array of pipe arrays to hold pipe arguments
-        char ***pipe_args = malloc((num_pipes + 1) * sizeof(char **));
-        for (int i = 0; i < num_pipes; i++) {
-            pipe_args[i] = tokenize(pipe_tokens[i], " ");
-        }
-        pipe_args[num_pipes] = NULL;
-
-        // Execute commands for each set of pipe arguments
+        char *arg = strtok(tokens, " ");
         int i = 0;
-        while (pipe_args[i]) {
-            if (pipe_args[i+1]) {
-                piper(pipe_args[i], count_tokens(pipe_args[i]));
+        while (arg) {
+            if (*arg == '|') {
+                args[i] = NULL;
+                piper(args, i);
+                i = 0;
             } else {
-                run(pipe_args[i]);
+                args[i] = arg;
+                i++;
             }
-            i++;
+            arg = strtok(NULL, " ");
         }
+        args[i] = NULL;
 
-        // Free memory
+        run(args);
         free(input);
-        free_tokens(pipe_tokens);
-        free_pipe_args(pipe_args);
     }
-
     return 0;
 }
-
-
-
