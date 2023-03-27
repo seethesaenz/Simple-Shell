@@ -79,13 +79,21 @@ char *tokenize(char *input) {
     }
     cleaned[j++] = '\0';
 
-    char *end;
-    end = cleaned + strlen(cleaned) - 1;
-    end--;
+    // strip leading spaces
+    while (*cleaned == ' ') {
+        cleaned++;
+    }
+
+    // strip trailing spaces
+    char *end = cleaned + strlen(cleaned) - 1;
+    while (*end == ' ') {
+        end--;
+    }
     *(end + 1) = '\0';
 
     return cleaned;
 }
+
 
 int main(void) {
     char *args[MAX];
