@@ -114,7 +114,9 @@ int main(void) {
         }
         args[i] = NULL;
 
-        run(args);
+        if (args[0] != NULL) {
+            run(args);
+        }
         free(input);
     }
     return 0;
