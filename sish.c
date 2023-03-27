@@ -23,6 +23,7 @@ void run(char *args[]) {
         } else if (pid == 0) {
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
+                exit(1);
             }
         } else {
             waitpid(pid, NULL, 0);
@@ -30,23 +31,42 @@ void run(char *args[]) {
     }
 }
 
-void piper(char *args[]) {
+void piper(char *args[], int fd_in, int fd_out) {
+    pid_t pid;
     int fd[2];
     pipe(fd);
 
-    pid_t pid = fork();
+    pid = fork();
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
-        dup2(fd[1], 1);
-        close(fd[1]);
-        close(fd[0]);
-        run(args);
-        exit(0);
+        close(fd[0]); // Close unused read end of pipe
+
+        if (fd_in != STDIN_FILENO) {
+            dup2(fd_in, STDIN_FILENO);
+            close(fd_in);
+        }
+
+        if (fd_out != STDOUT_FILENO) {
+            dup2(fd_out, STDOUT_FILENO);
+            close(fd_out);
+        }
+
+        if (execvp(args[0], args) < 0) {
+            perror("Error executing command");
+            exit(1);
+        }
     } else {
-        dup2(fd[0], 0);
-        close(fd[0]);
-        close(fd[1]);
+        close(fd[1]); // Close unused write end of pipe
+
+        if (fd_in != STDIN_FILENO) {
+            close(fd_in);
+        }
+
+        if (fd_out != STDOUT_FILENO) {
+            close(fd_out);
+        }
+
         waitpid(pid, NULL, 0);
     }
 }
@@ -103,8 +123,12 @@ int main(void) {
         }
         args[i] = NULL;
 
-        run(args);
+        if (args[0] != NULL) {
+            run(args);
+        }
+
         free(input);
     }
     return 0;
 }
+
