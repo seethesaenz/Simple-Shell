@@ -45,15 +45,15 @@ void piper(char *args[], int size) {
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
+        close(fd[0]);
         dup2(fd[1], 1);
         close(fd[1]);
-        close(fd[0]);
         run(args);
         exit(0);
     } else {
+        close(fd[1]);
         dup2(fd[0], 0);
         close(fd[0]);
-        close(fd[1]);
         waitpid(pid, NULL, 0);
         int i;
         for(i = 0; i< size; i++){
