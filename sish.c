@@ -8,7 +8,7 @@
 size_t MAX = 1024; // max length
 int flag = 1;
 
-void run(char *args[], int fd_in) {
+void run(char *args[]) {
     pid_t pid;
     if (strcmp(args[0], "exit") == 0) {
         flag = 0;
@@ -21,21 +21,16 @@ void run(char *args[], int fd_in) {
         if (pid < 0) {
             perror("Fork Failed");
         } else if (pid == 0) {
-            if (fd_in != 0) {
-                dup2(fd_in, 0);
-                close(fd_in);
-            }
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
             }
-            exit(0);
         } else {
             waitpid(pid, NULL, 0);
         }
     }
 }
 
-void piper(char *cmd1[], int fd_in, int fd_out) {
+void piper(char *args[]) {
     int fd[2];
     pipe(fd);
 
@@ -43,25 +38,18 @@ void piper(char *cmd1[], int fd_in, int fd_out) {
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
-        dup2(fd_in, 0);
-        if (fd_out != 1) {
-            dup2(fd[1], 1);
-        }
-        close(fd[0]);
+        dup2(fd[1], 1);
         close(fd[1]);
-        run(cmd1, fd[0]);
+        close(fd[0]);
+        run(args);
         exit(0);
     } else {
-        if (fd_out != 1) {
-            close(fd[1]);
-            piper(NULL, fd[0], fd_out);
-        } else {
-            close(fd[0]);
-            waitpid(pid, NULL, 0);
-        }
+        dup2(fd[0], 0);
+        close(fd[0]);
+        close(fd[1]);
+        waitpid(pid, NULL, 0);
     }
 }
-
 
 char *tokenize(char *input) {
     int i;
@@ -88,43 +76,35 @@ char *tokenize(char *input) {
     return cleaned;
 }
 
-
-
 int main(void) {
     char *args[MAX];
-    int fd_in = 0;
-    char *input, *tokens, *arg;
-    int i;
 
     while (flag) {
         printf("sish> ");
 
-        input = malloc(MAX * sizeof(char));
+        char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
+        char *tokens;
         tokens = tokenize(input);
-        arg = strtok(tokens, " ");
-        i = 0;
 
+        char *arg = strtok(tokens, " ");
+        int i = 0;
         while (arg) {
             if (*arg == '|') {
                 args[i] = NULL;
-                piper(args, fd_in, STDOUT_FILENO);
+                piper(args);
                 i = 0;
             } else {
-                args[i++] = arg;
+                args[i] = arg;
+                i++;
             }
             arg = strtok(NULL, " ");
         }
-
         args[i] = NULL;
-        if (args[0] != NULL && strcmp(args[0], "cd") != 0 && strcmp(args[0], "exit") != 0) {
-            run(args, fd_in);
-        }
+
+        run(args);
         free(input);
     }
     return 0;
 }
-
-
-
