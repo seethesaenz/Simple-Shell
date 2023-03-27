@@ -30,7 +30,7 @@ void run(char *args[])
                 perror("Error executing command");
             }
         }else{
-            waitpid(pid, NULL, 0);
+            wait(NULL);
         }
     }
 
