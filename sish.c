@@ -114,6 +114,7 @@ int main(void) {
                 i++;
             }
         }
+        i = 0;
 
         run(args);
         free(input);
