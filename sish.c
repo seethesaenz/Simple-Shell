@@ -54,15 +54,26 @@ void piper(char *args[], int size) {
         close(fd[1]);
         dup2(fd[0], 0);
         close(fd[0]);
-        waitpid(pid, NULL, 0);
-        int i;
-        for(i = 0; i < size; i++){
-            args[i] = NULL;
+
+        // Create a copy of args before modifying it
+        char **child_args = malloc((size+1) * sizeof(char *));
+        for (int i = 0; i < size; i++) {
+            child_args[i] = malloc(strlen(args[i]) + 1);
+            strcpy(child_args[i], args[i]);
         }
-        free(args);
+        child_args[size] = NULL;
+
+        waitpid(pid, NULL, 0);
+
+        // Free the copy of args
+        for (int i = 0; i < size; i++) {
+            free(child_args[i]);
+        }
+        free(child_args);
     }
     return;
 }
+
 
 
 char **tokenize(char *input) {
