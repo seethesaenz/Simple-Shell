@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-size_t MAX = 1024; // max length
+#define MAX 1024 // max length
 int flag = 1;
 
 void run(char *args[]) {
@@ -99,7 +99,7 @@ int main(void) {
         char *tokens;
         tokens = tokenize(input);
 
-        char *arg = strtok(tokens, " ");
+        char *arg = strtok(tokens, " \n");
         int i = 0;
         while (arg) {
             if (*arg == '|') {
@@ -110,7 +110,7 @@ int main(void) {
                 args[i] = arg;
                 i++;
             }
-            arg = strtok(NULL, " ");
+            arg = strtok(NULL, " \n");
         }
         args[i] = NULL;
 
