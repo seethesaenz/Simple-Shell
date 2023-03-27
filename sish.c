@@ -68,30 +68,20 @@ void piper(char *args[], int size) {
     }
 }
 
-char *tokenize(char *input) {
-    int i;
-    int j = 0;
-    char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
+char **tokenize(char *input) {
+    char **commands = (char **) malloc(MAX * sizeof(char *));
+    int i = 0;
 
-    // clean input to allow for easy reading
-    for (i = 0; i < strlen(input); i++) {
-        if (input[i] == '|') {
-            cleaned[j++] = ' ';
-            cleaned[j++] = input[i];
-            cleaned[j++] = ' ';
-        } else {
-            cleaned[j++] = input[i];
-        }
+    char *command = strtok(input, "|");
+    while (command != NULL) {
+        commands[i++] = command;
+        command = strtok(NULL, "|");
     }
-    cleaned[j++] = '\0';
+    commands[i] = NULL;
 
-    char *end;
-    end = cleaned + strlen(cleaned) - 1;
-    end--;
-    *(end + 1) = '\0';
-
-    return cleaned;
+    return commands;
 }
+
 
 int main(void) {
     char *args[MAX];
@@ -104,35 +94,30 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char *tokens;
-        tokens = tokenize(input);
+        char **commands = tokenize(input);
 
-        char *cmd = strtok(tokens, "|");
         int i = 0;
-        while (cmd) {
-            // Parse arguments for current command
-            char *arg = strtok(cmd, " \n");
+        while (commands[i] != NULL) {
+            char *arg = strtok(commands[i], " \n");
+            int j = 0;
             while (arg) {
-                args[i] = arg;
-                i++;
+                args[j++] = arg;
                 arg = strtok(NULL, " \n");
             }
-            args[i] = NULL;
 
-            // Execute current command
-            if (i > 0) {
-                piper(args, i);
+            if (commands[i+1] != NULL) {
+                // pipe to next command
+                piper(args, j);
+            } else {
+                // last command, don't pipe
+                run(args);
             }
 
-            // Reset arguments for next command
-            memset(args, 0, sizeof(args));
-            i = 0;
-
-            // Get next command
-            cmd = strtok(NULL, "|");
+            i++;
         }
 
         free(input);
+        free(commands);
     }
 
     return 0;
