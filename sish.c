@@ -104,8 +104,10 @@ int main(void) {
 
         char *arg = strtok(tokens, " \n");
         int i = 0;
+        int has_pipe = 0;
         while (arg) {
             if (*arg == '|') {
+                has_pipe = 1;
                 args[i] = NULL;
                 piper(args, i);
                 i = 0;
@@ -116,10 +118,12 @@ int main(void) {
             arg = strtok(NULL, " \n");
         }
         args[i] = NULL;
-        run(args);    
+        if (!has_pipe) {
+            run(args);
+        }
 
         free(input);
-
     }
+
     return 0;
 }
