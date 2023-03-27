@@ -9,33 +9,7 @@
 size_t MAX =  1024; // max length
 int flag = 1;
 
-void run(char *args[]) {
 
-    pid_t pid;
-    if (args[0] == NULL){
-        return;
-    }
-    if (strcmp(args[0], "exit") == 0) {
-        flag = 0;
-    } else if (strcmp(args[0], "cd") == 0) {
-        if (chdir(args[1]) != 0) {
-            perror("Error changing directory");
-        }
-    } else {
-        pid = fork();
-        if (pid < 0) {
-            perror("Fork Failed");
-        } else if (pid == 0) {
-            errno = 0;
-            if (execvp(args[0], args) < 0) {
-                perror("Error executing command");
-                exit(1);
-            }
-        } else {
-            waitpid(pid, NULL, 0);
-        }
-    }
-}
 
 void piper(char *args[], int size) {
     int i;
@@ -52,7 +26,7 @@ void piper(char *args[], int size) {
     if (strcmp(args[0], "exit") == 0){
         flag = 0;
     }else if(strcmp(args[0], "cd")==0){
-        if(chdir(args[i]) != -){
+        if(chdir(args[i]) != 0){
             perror("Error changing directory");
         }
     }
