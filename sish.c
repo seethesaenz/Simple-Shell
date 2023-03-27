@@ -41,19 +41,19 @@ void piper(char *args[]) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-        args[1] = NULL;  // set the argument after the pipe symbol to NULL
         run(args);
         exit(0);
     } else {
         dup2(fd[0], 0);
         close(fd[0]);
         close(fd[1]);
-        args[0] += 2;  // move the argument after the pipe symbol to the front
-        run(args);
         waitpid(pid, NULL, 0);
+        int i;
+        for(i = 0; i< MAX; i++){
+            args[i] = NULL;
+        }
     }
 }
-
 
 char *tokenize(char *input) {
     int i;
