@@ -95,7 +95,7 @@ char *tokenize(char *input) {
 }
 
 int main(void) {
-    char *args[MAX];
+    char **args[MAX];
     char **cmds[MAX];
     int cmd_count = 0;
 
@@ -114,20 +114,22 @@ int main(void) {
 
         char *arg = strtok(tokens, " \n");
         int i = 0;
+        int arg_count = 0;
         while (arg) {
             if (*arg == '|') {
-                args[i] = NULL;
-                cmds[cmd_count] = args;
+                args[arg_count][i] = NULL;
+                cmds[cmd_count] = args[arg_count];
                 cmd_count++;
+                arg_count++;
                 i = 0;
             } else {
-                args[i] = arg;
+                args[arg_count][i] = arg;
                 i++;
             }
             arg = strtok(NULL, " \n");
         }
-        args[i] = NULL;
-        cmds[cmd_count] = args;
+        args[arg_count][i] = NULL;
+        cmds[cmd_count] = args[arg_count];
         cmd_count++;
 
         for (int j = 0; j < cmd_count; j++) {
