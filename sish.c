@@ -11,11 +11,6 @@ int flag = 1;
 
 void run(char *args[]) {
 
-    // Debug statement
-    // for (int i = 0; args[i] != NULL; i++) {
-    //     printf("args[%d]: %s\n", i, args[i]);
-    // }
-
     pid_t pid;
     if (args[0] == NULL){
         return;
@@ -53,7 +48,7 @@ void piper(char *args[], int size) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-        run(args);
+        execvp(args[0], args);
         exit(0);
     } else {
         dup2(fd[0], 0);
