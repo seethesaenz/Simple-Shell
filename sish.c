@@ -99,6 +99,9 @@ int main(void) {
         fflush(stdin);
         getline(&input, &MAX, stdin);
 
+        // Remove the newline character from the input
+        input[strcspn(input, "\n")] = '\0';
+
         printf("Input: %s\n", input);
 
         args = tokenize(input);
@@ -114,11 +117,11 @@ int main(void) {
                 i++;
             }
         }
-        i = 0;
 
         run(args);
         free(input);
     }
     return 0;
 }
+
 
