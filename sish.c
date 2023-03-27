@@ -16,16 +16,19 @@ void run(char *args[])
         flag = 0;
     }else if(strcmp(args[0], "cd") == 0)
     {
-        if (chdir(args[1]) != 0){
-            printf("Directory: %s, not found.", args[1]);
+        if (chdir(args[1]) != 0)
+        {
+            perror("Error changing directory");
         }
     }else{
         pid = fork();
         if(pid < 0){
-            fprintf(stderr, "Fork Failed");
+            perror("Fork Failed");
         }
         else if (pid == 0){
-            execvp(args[0], args);
+            if (execvp(args[0], args) < 0){
+                perror("Error executing command");
+            }
         }
     }
 
