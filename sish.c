@@ -29,6 +29,8 @@ void run(char *args[])
             if (execvp(args[0], args) < 0){
                 perror("Error executing command");
             }
+        }else{
+            waitpid(pid, NULL, 0);
         }
     }
 
