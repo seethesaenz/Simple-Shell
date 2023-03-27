@@ -96,6 +96,7 @@ int main(void) {
         printf("sish> ");
 
         char *input = malloc(MAX * sizeof(char));
+        fflush(stdin);
         getline(&input, &MAX, stdin);
 
         printf("Input: %s\n", input);
