@@ -92,6 +92,8 @@ int main(void) {
     char *args[MAX];
 
     while (flag) {
+        memset(args, 0, sizeof(args));
+
         printf("sish> ");
 
         char *input = malloc(MAX * sizeof(char));
