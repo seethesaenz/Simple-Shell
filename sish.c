@@ -110,7 +110,6 @@ int main(void) {
 
         run(args);
         free(input);
-        free(cleaned);
     }
     return 0;
 }
