@@ -23,7 +23,6 @@ void run(char *args[]) {
         } else if (pid == 0) {
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
-                exit(1);
             }
         } else {
             waitpid(pid, NULL, 0);
@@ -31,25 +30,25 @@ void run(char *args[]) {
     }
 }
 
-void piper(char *args[], int fd[]) {
-    pid_t pid;
-    int status;
+void piper(char *cmd1[], char *cmd2[]) {
+    int fd[2];
+    pipe(fd);
 
-    pid = fork();
+    pid_t pid = fork();
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
+        dup2(fd[1], 1);
+        close(fd[1]);
+        close(fd[0]);
+        run(cmd1);
+        exit(0);
+    } else {
         dup2(fd[0], 0);
         close(fd[0]);
         close(fd[1]);
-        if (execvp(args[0], args) < 0) {
-            perror("Error executing command");
-            exit(1);
-        }
-    } else {
-        close(fd[0]);
-        close(fd[1]);
-        waitpid(pid, &status, 0);
+        run(cmd2);
+        waitpid(pid, NULL, 0);
     }
 }
 
@@ -78,39 +77,42 @@ char *tokenize(char *input) {
     return cleaned;
 }
 
+
 int main(void) {
     char *args[MAX];
-    int fd[2];
+    int fd_in = 0;
+    char *input, *tokens, *arg;
+    int i;
 
     while (flag) {
         printf("sish> ");
 
-        char *input = malloc(MAX * sizeof(char));
+        input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char *tokens;
         tokens = tokenize(input);
+        arg = strtok(tokens, " ");
+        i = 0;
 
-        char *arg = strtok(tokens, " ");
-        int i = 0;
         while (arg) {
             if (*arg == '|') {
                 args[i] = NULL;
-                pipe(fd);
-                piper(args, fd);
+                piper(args, fd_in, STDOUT_FILENO);
                 i = 0;
             } else {
-                args[i] = arg;
-                i++;
+                args[i++] = arg;
             }
             arg = strtok(NULL, " ");
         }
-        args[i] = NULL;
 
-        run(args);
+        args[i] = NULL;
+        if (args[0] != NULL && strcmp(args[0], "cd") != 0 && strcmp(args[0], "exit") != 0) {
+            run(args, fd_in, STDOUT_FILENO);
+        }
         free(input);
     }
     return 0;
 }
+
 
 
