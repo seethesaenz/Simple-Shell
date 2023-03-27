@@ -103,6 +103,7 @@ int main(void)
             args[i] = NULL;
 
             run(args);
+            free(input);
     }
     return 0;
 }
