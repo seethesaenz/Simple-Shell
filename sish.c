@@ -9,12 +9,10 @@
 size_t MAX =  1024; // max length
 int flag = 1;
 
-
-
 void piper(char *args[], int size) {
     int i;
     int j = 0;
-    int num_cmds = 1;
+    int count = 1;
     int cmd_start = 0;
     int fd[2];
     int in_fd = 0;
@@ -31,65 +29,57 @@ void piper(char *args[], int size) {
         }
     }
 
-    // Count the number of commands/pipes
     for (i = 0; i < size; i++) {
         if (args[i] == NULL) {
-            num_cmds++;
+            count++;
         }
     }
 
-    for (i = 0; i < num_cmds; i++) {
-        // Find the start and end of the current command
+    for (i = 0; i < count; i++) {
+
         cmd_start = j;
         while (args[j] != NULL) {
             j++;
         }
 
-        // Set up a pipe for all but the last command
-        if (i < num_cmds - 1) {
+
+        if (i < count - 1) {
             pipe(fd);
         }
 
-        // Fork a child process to execute the current command
+
         pid_t pid = fork();
         if (pid < 0) {
             perror("Fork Failed");
         } else if (pid == 0) {
-            // In the child process
 
-            // Set up input redirection for all but the first command
             if (i > 0) {
                 dup2(in_fd, 0);
                 close(in_fd);
             }
 
-            // Set up output redirection for all but the last command
-            if (i < num_cmds - 1) {
+
+            if (i < count - 1) {
                 dup2(fd[1], 1);
                 close(fd[1]);
                 close(fd[0]);
             }
 
-            // Execute the current command
+
             execvp(args[cmd_start], &args[cmd_start]);
             exit(0);
         } else {
-            // In the parent process
 
-            // Close the input file descriptor from the previous iteration
             if (i > 0) {
                 close(in_fd);
             }
 
-            // Set up the input file descriptor for the next iteration
-            if (i < num_cmds - 1) {
+            if (i < count - 1) {
                 in_fd = fd[0];
                 close(fd[1]);
             }
 
-            // Wait for the child process to complete
             waitpid(pid, NULL, 0);
-
             j++;
         }
     }
@@ -147,9 +137,7 @@ int main(void) {
             arg = strtok(NULL, " \n");
         }
         args[i] = NULL;
-
         piper(args, i);
-
         free(input);
     }
     return 0;
