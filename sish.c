@@ -26,7 +26,7 @@ void piper(char *args[], int size) {
     if (strcmp(args[0], "exit") == 0){
         flag = 0;
     }else if(strcmp(args[0], "cd")==0){
-        if(chdir(args[i]) != 0){
+        if(chdir(args[1]) != 0){
             perror("Error changing directory");
         }
     }
