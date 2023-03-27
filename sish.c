@@ -60,10 +60,6 @@ void piper(char *args[], int size) {
         close(fd[0]);
         close(fd[1]);
         waitpid(pid, NULL, 0);
-        int i;
-        for(i = 0; i< size; i++){
-            args[i] = NULL;
-        }
         args[size] = NULL;
     }
 }
@@ -77,7 +73,6 @@ char *tokenize(char *input) {
     for (i = 0; i < strlen(input); i++) {
         if (input[i] == '|') {
             cleaned[j++] = ' ';
-            cleaned[j++] = input[i];
             cleaned[j++] = ' ';
         } else {
             cleaned[j++] = input[i];
@@ -122,7 +117,7 @@ int main(void) {
         }
         args[i] = NULL;
         run(args);    
-
+        free(tokens);
         free(input);
     }
     return 0;
