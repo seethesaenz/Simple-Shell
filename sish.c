@@ -24,6 +24,7 @@ void run(char *args[]) {
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
             }
+            exit(0);
         } else {
             waitpid(pid, NULL, 0);
         }
@@ -109,6 +110,7 @@ int main(void) {
 
         run(args);
         free(input);
+        free(cleaned);
     }
     return 0;
 }
