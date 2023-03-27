@@ -111,8 +111,10 @@ char **tokenize(char *input, int *num_commands) {
     return commands;
 }
 
+
 int main(void) {
-    char *args[MAX];
+    char **args;
+    int num_commands;
 
     while (flag) {
         printf("sish> ");
@@ -120,26 +122,16 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char *tokens;
-        tokens = tokenize(input);
+        args = tokenize(input, &num_commands);
 
-        char *arg = strtok(tokens, " \n");
-        int i = 0;
-        while (arg) {
-            if (*arg == '|') {
-                args[i] = NULL;
-                piper(args, i);
-                i = 0;
-            } else {
-                args[i] = arg;
-                i++;
-            }
-            arg = strtok(NULL, " \n");
+        if (num_commands > 0) {
+            piper(args, num_commands);
+        } else {
+            run(args);
         }
-        args[i] = NULL;
 
-        run(args);
         free(input);
     }
+
     return 0;
 }
