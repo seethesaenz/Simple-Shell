@@ -106,17 +106,17 @@ int main(void) {
 
         args = tokenize(input);
 
-        int i = 0;
-        while (args[i]) {
-            if (strcmp(args[i], "|") == 0) {
-                args[i] = NULL;
-                piper(args, i);
-                args += i + 1;
-                i = 0;
+        int next_arg_index = 0;
+        while (args[next_arg_index]) {
+            if (strcmp(args[next_arg_index], "|") == 0) {
+                args[next_arg_index] = NULL;
+                piper(args, next_arg_index);
+                next_arg_index++;
             } else {
-                i++;
+                next_arg_index++;
             }
         }
+
 
         run(args);
         free(input);
