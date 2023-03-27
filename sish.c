@@ -98,7 +98,7 @@ int main(void) {
         char *tokens;
         tokens = tokenize(input);
 
-        char *arg = strtok(tokens, " \n");
+        char *arg = strtok(tokens, " \n|");
         int i = 0;
         while (arg) {
             if (*arg == '|') {
@@ -109,7 +109,7 @@ int main(void) {
                 args[i] = arg;
                 i++;
             }
-            arg = strtok(NULL, " \n");
+            arg = strtok(NULL, " \n|");
         }
         args[i] = NULL;
         run(args);    
