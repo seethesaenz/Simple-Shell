@@ -30,6 +30,7 @@ void run(char *args[]) {
         if (pid < 0) {
             perror("Fork Failed");
         } else if (pid == 0) {
+            errno = 0;
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
             }
