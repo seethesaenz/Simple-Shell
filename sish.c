@@ -98,7 +98,6 @@ int main(void) {
 
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
-        input[strcspn(input, "\n")] = '\0';
 
         char *tokens;
         tokens = tokenize(input);
