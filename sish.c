@@ -34,61 +34,50 @@ void piper(char *args[]) {
     int fd[2];
     pipe(fd);
 
-    pid_t pid1 = fork();
-    if (pid1 < 0) {
+    pid_t pid = fork();
+    if (pid < 0) {
         perror("Fork Failed");
-    } else if (pid1 == 0) {
-        close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
+    } else if (pid == 0) {
+        dup2(fd[1], 1);
         close(fd[1]);
+        close(fd[0]);
         run(args);
         exit(0);
-    }
-
-    pid_t pid2 = fork();
-    if (pid2 < 0) {
-        perror("Fork Failed");
-    } else if (pid2 == 0) {
-        close(fd[1]);
-        dup2(fd[0], STDIN_FILENO);
+    } else {
+        dup2(fd[0], 0);
         close(fd[0]);
-        run(args+2);
-        exit(0);
+        close(fd[1]);
+        waitpid(pid, NULL, 0);
     }
-
-    close(fd[0]);
-    close(fd[1]);
-
-    waitpid(pid1, NULL, 0);
-    waitpid(pid2, NULL, 0);
 }
 
+char *tokenize(char *input) {
+    int i;
+    int j = 0;
+    char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
 
-char **tokenize(char *input) {
-    int i, j;
-    char **commands = (char **)malloc(MAX * sizeof(char *));
-    for (i = 0; i < MAX; i++) {
-        commands[i] = (char *)malloc(MAX * sizeof(char));
-    }
-    char *token = strtok(input, "|");
-    i = 0;
-    while (token != NULL) {
-        j = 0;
-        char *arg = strtok(token, " ");
-        while (arg != NULL) {
-            commands[i][j++] = *arg;
-            arg = strtok(NULL, " ");
+    // clean input to allow for easy reading
+    for (i = 0; i < strlen(input); i++) {
+        if (input[i] == '|') {
+            cleaned[j++] = ' ';
+            cleaned[j++] = input[i];
+            cleaned[j++] = ' ';
+        } else {
+            cleaned[j++] = input[i];
         }
-        commands[i][j] = '\0';
-        token = strtok(NULL, "|");
-        i++;
     }
-    commands[i] = NULL;
-    return commands;
+    cleaned[j++] = '\0';
+
+    char *end;
+    end = cleaned + strlen(cleaned) - 1;
+    end--;
+    *(end + 1) = '\0';
+
+    return cleaned;
 }
 
 int main(void) {
-    char **commands;
+    char *args[MAX];
 
     while (flag) {
         printf("sish> ");
@@ -96,32 +85,25 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        commands = tokenize(input);
+        char *tokens;
+        tokens = tokenize(input);
 
+        char *arg = strtok(tokens, " ");
         int i = 0;
-        while (commands[i] != NULL) {
-            char **args = malloc(MAX * sizeof(char *));
-            int j = 0;
-            char *arg = strtok(commands[i], " ");
-            while (arg != NULL) {
-                args[j++] = arg;
-                arg = strtok(NULL, " ");
+        while (arg) {
+            if (*arg == '|') {
+                args[i] = NULL;
+                piper(args);
+                i = 0;
+            } else {
+                args[i] = arg;
+                i++;
             }
-            args[j] = NULL;
-
-            if (args[0] != NULL) {
-                if (*args[0] == '|') {
-                    piper(args);
-                } else {
-                    run(args);
-                }
-            }
-
-            free(args);
-            i++;
+            arg = strtok(NULL, " ");
         }
+        args[i] = NULL;
 
-        free(commands);
+        run(args);
         free(input);
     }
     return 0;
