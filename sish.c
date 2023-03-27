@@ -34,8 +34,8 @@ void run(char *args[]) {
             errno = 0;
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
+                exit(1);
             }
-            exit(0);
         } else {
             waitpid(pid, NULL, 0);
         }
