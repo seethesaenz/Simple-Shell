@@ -11,9 +11,9 @@ int flag = 1;
 void run(char *args[]) {
 
     // Debug statement
-    for (int i = 0; args[i] != NULL; i++) {
-        printf("args[%d]: %s\n", i, args[i]);
-    }
+    // for (int i = 0; args[i] != NULL; i++) {
+    //     printf("args[%d]: %s\n", i, args[i]);
+    // }
 
     pid_t pid;
     if (strcmp(args[0], "exit") == 0) {
