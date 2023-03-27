@@ -41,7 +41,7 @@ void piper(char *args[]) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-        run(args);
+        run(args + 1);
         exit(0);
     } else {
         dup2(fd[0], 0);
@@ -50,6 +50,7 @@ void piper(char *args[]) {
         waitpid(pid, NULL, 0);
     }
 }
+
 
 char *tokenize(char *input) {
     int i;
