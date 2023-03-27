@@ -107,17 +107,21 @@ int main(void) {
         while (args[i]) {
             if (strcmp(args[i], "|") == 0) {
                 args[i] = NULL;
+                char **right_args = args + i + 1; // Create new array for right-hand side
                 piper(args, i);
-                args += i + 1;
-                i = 0;
+                run(right_args); // Run right-hand side
+                break; // Exit loop since we've handled the pipe
             } else {
                 i++;
             }
         }
 
-        run(args);
+        if (args[i] != NULL) { // Only run if we didn't handle a pipe
+            run(args);
+        }
         free(input);
     }
+
     return 0;
 }
 
