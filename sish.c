@@ -35,7 +35,6 @@ void run(char *args[]) {
         }
     }
 }
-
 void piper(char *cmd1[], char *cmd2[]) {
     int fd[2];
     pipe(fd);
