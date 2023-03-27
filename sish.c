@@ -49,7 +49,7 @@ void piper(char *cmd1[], int fd_in, int fd_out) {
         }
         close(fd[0]);
         close(fd[1]);
-        run(cmd1, fd_in);
+        run(cmd1, fd[0]);
         exit(0);
     } else {
         if (fd_out != 1) {
@@ -61,6 +61,7 @@ void piper(char *cmd1[], int fd_in, int fd_out) {
         }
     }
 }
+
 
 char *tokenize(char *input) {
     int i;
