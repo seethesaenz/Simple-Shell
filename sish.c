@@ -10,7 +10,6 @@ size_t MAX =  1024; // max length
 int flag = 1;
 
 void run(char *args[]) {
-
     pid_t pid;
     if (args[0] == NULL){
         return;
@@ -37,25 +36,37 @@ void run(char *args[]) {
     }
 }
 
-void piper(char *args[], int size) {
+void piper(char *cmd1[], char *cmd2[]) {
     int fd[2];
     pipe(fd);
 
-    pid_t pid = fork();
-    if (pid < 0) {
+    pid_t pid1 = fork();
+    if (pid1 < 0) {
         perror("Fork Failed");
-    } else if (pid == 0) {
+    } else if (pid1 == 0) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-        execvp(args[0], args);
+        execvp(cmd1[0], cmd1);
         exit(0);
-    } else {
+    }
+
+    pid_t pid2 = fork();
+    if (pid2 < 0) {
+        perror("Fork Failed");
+    } else if (pid2 == 0) {
         dup2(fd[0], 0);
         close(fd[0]);
         close(fd[1]);
-        waitpid(pid, NULL, 0);
+        execvp(cmd2[0], cmd2);
+        exit(0);
     }
+
+    close(fd[0]);
+    close(fd[1]);
+
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
 }
 
 char *tokenize(char *input) {
@@ -85,37 +96,50 @@ char *tokenize(char *input) {
 
 int main(void) {
     char *args[MAX];
+    char *cmds[MAX];
+    int cmd_count = 0;
 
     while (flag) {
         memset(args, 0, sizeof(args));
+        memset(cmds, 0, sizeof(cmds));
+        cmd_count = 0;
 
         printf("sish> ");
 
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-
         char *tokens;
         tokens = tokenize(input);
 
-        char *arg = strtok(tokens, " \n|");
+        char *arg = strtok(tokens, " \n");
         int i = 0;
         while (arg) {
             if (*arg == '|') {
                 args[i] = NULL;
-                piper(args, i);
+                cmds[cmd_count] = args[0];
+                cmd_count++;
                 i = 0;
             } else {
                 args[i] = arg;
                 i++;
             }
-            arg = strtok(NULL, " \n|");
+            arg = strtok(NULL, " \n");
         }
         args[i] = NULL;
-        run(args);    
+        cmds[cmd_count] = args[0];
+        cmd_count++;
+
+        for (int j = 0; j < cmd_count; j++) {
+            if (j < cmd_count - 1) {
+                piper(cmds[j], cmds[j + 1]);
+                j++;
+            } else {
+                run(cmds[j]);
+            }
+        }
 
         free(input);
-
     }
     return 0;
 }
