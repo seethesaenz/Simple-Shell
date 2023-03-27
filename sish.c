@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 
 
@@ -30,7 +31,7 @@ void run(char *args[])
                 perror("Error executing command");
             }
         }else{
-            wait(NULL);
+            waitpid(pid, NULL, 0);
         }
     }
 
