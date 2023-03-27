@@ -95,12 +95,15 @@ char *tokenize(char *input) {
 }
 
 int main(void) {
-    char **args[MAX];
+    char ***args = malloc(MAX * sizeof(char **));
+    for (int i = 0; i < MAX; i++) {
+        args[i] = malloc(MAX * sizeof(char *));
+    }
     char **cmds[MAX];
     int cmd_count = 0;
 
     while (flag) {
-        memset(args, 0, sizeof(args));
+        memset(args, 0, MAX * sizeof(char **));
         memset(cmds, 0, sizeof(cmds));
         cmd_count = 0;
 
@@ -143,5 +146,11 @@ int main(void) {
 
         free(input);
     }
+
+    for (int i = 0; i < MAX; i++) {
+        free(args[i]);
+    }
+    free(args);
+
     return 0;
 }
