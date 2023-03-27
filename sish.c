@@ -82,25 +82,26 @@ char **tokenize(char *input) {
 
     // Count the number of tokens in the input
     for (char *c = input; *c != '\0'; c++) {
-        if (*c == ' ' || *c == '\n') {
+        if (*c == ' ' || *c == '\n' || *c == '|') {
             continue;
         }
         num_tokens++;
-        while (*c != ' ' && *c != '\n' && *c != '\0') {
+        while (*c != ' ' && *c != '\n' && *c != '|' && *c != '\0') {
             c++;
         }
     }
 
     tokens = malloc((num_tokens + 1) * sizeof(char *));
-    char *arg = strtok(input, " \n");
+    char *arg = strtok(input, " \n|");
     while (arg) {
         tokens[i++] = arg;
-        arg = strtok(NULL, " \n");
+        arg = strtok(NULL, " \n|");
     }
     tokens[i] = NULL;
 
     return tokens;
 }
+
 
 
 int main(void) {
@@ -118,24 +119,39 @@ int main(void) {
 
         printf("Input: %s\n", input);
 
-        args = tokenize(input);
-
-        int i = 0;
-        while (args[i]) {
-            if (strcmp(args[i], "|") == 0) {
-                args[i] = NULL;
-                piper(args, i);
-                args += i + 1;
-                i = 0;
-            } else {
-                i++;
-            }
+        // Tokenize the input by pipes
+        char **pipe_tokens = tokenize(input, "|");
+        int num_pipes = 0;
+        while (pipe_tokens[num_pipes] != NULL) {
+            num_pipes++;
         }
 
-        run(args);
+        // Create an array of pipe arrays to hold pipe arguments
+        char ***pipe_args = malloc((num_pipes + 1) * sizeof(char **));
+        for (int i = 0; i < num_pipes; i++) {
+            pipe_args[i] = tokenize(pipe_tokens[i], " ");
+        }
+        pipe_args[num_pipes] = NULL;
+
+        // Execute commands for each set of pipe arguments
+        int i = 0;
+        while (pipe_args[i]) {
+            if (pipe_args[i+1]) {
+                piper(pipe_args[i], count_tokens(pipe_args[i]));
+            } else {
+                run(pipe_args[i]);
+            }
+            i++;
+        }
+
+        // Free memory
         free(input);
+        free_tokens(pipe_tokens);
+        free_pipe_args(pipe_args);
     }
+
     return 0;
 }
+
 
 
