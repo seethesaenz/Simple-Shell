@@ -118,7 +118,7 @@ int main(void) {
 
         args[i] = NULL;
         if (args[0] != NULL && strcmp(args[0], "cd") != 0 && strcmp(args[0], "exit") != 0) {
-            run(args);
+            run(args, fd_in);
         }
         free(input);
     }
