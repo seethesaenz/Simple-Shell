@@ -16,6 +16,9 @@ void run(char *args[]) {
     // }
 
     pid_t pid;
+    if (args[0] == NULL){
+        return;
+    }
     if (strcmp(args[0], "exit") == 0) {
         flag = 0;
     } else if (strcmp(args[0], "cd") == 0) {
