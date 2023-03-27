@@ -119,6 +119,7 @@ int main(void) {
         run(args);    
 
         free(input);
+        fflush(stdin);
     }
     return 0;
 }
