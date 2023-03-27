@@ -37,7 +37,7 @@ void run(char *args[]) {
     }
 }
 
-void piper(char *args[], int size) {
+void piper(char *args1[], char *args2[]) {
     int fd[2];
     pipe(fd);
 
@@ -48,7 +48,7 @@ void piper(char *args[], int size) {
         dup2(fd[1], 1);
         close(fd[1]);
         close(fd[0]);
-        execvp(args[0], args);
+        execvp(args1[0], args1);
         exit(0);
     } else {
         pid_t pid2 = fork();
@@ -58,7 +58,7 @@ void piper(char *args[], int size) {
             dup2(fd[0], 0);
             close(fd[0]);
             close(fd[1]);
-            execvp(args[size + 1], args + size + 1);
+            execvp(args2[0], args2);
             exit(0);
         } else {
             close(fd[0]);
