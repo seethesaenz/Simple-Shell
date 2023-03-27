@@ -8,7 +8,7 @@
 size_t MAX = 1024; // max length
 int flag = 1;
 
-void run(char *args[]) {
+void run(char *args[], int fd_in) {
     pid_t pid;
     if (strcmp(args[0], "exit") == 0) {
         flag = 0;
@@ -21,16 +21,21 @@ void run(char *args[]) {
         if (pid < 0) {
             perror("Fork Failed");
         } else if (pid == 0) {
+            if (fd_in != 0) {
+                dup2(fd_in, 0);
+                close(fd_in);
+            }
             if (execvp(args[0], args) < 0) {
                 perror("Error executing command");
             }
+            exit(0);
         } else {
             waitpid(pid, NULL, 0);
         }
     }
 }
 
-void piper(char *cmd1[], char *cmd2[]) {
+void piper(char *cmd1[], int fd_in, int fd_out) {
     int fd[2];
     pipe(fd);
 
@@ -38,17 +43,22 @@ void piper(char *cmd1[], char *cmd2[]) {
     if (pid < 0) {
         perror("Fork Failed");
     } else if (pid == 0) {
-        dup2(fd[1], 1);
-        close(fd[1]);
+        dup2(fd_in, 0);
+        if (fd_out != 1) {
+            dup2(fd[1], 1);
+        }
         close(fd[0]);
-        run(cmd1);
+        close(fd[1]);
+        run(cmd1, fd_in);
         exit(0);
     } else {
-        dup2(fd[0], 0);
-        close(fd[0]);
-        close(fd[1]);
-        run(cmd2);
-        waitpid(pid, NULL, 0);
+        if (fd_out != 1) {
+            close(fd[1]);
+            piper(NULL, fd[0], fd_out);
+        } else {
+            close(fd[0]);
+            waitpid(pid, NULL, 0);
+        }
     }
 }
 
@@ -76,6 +86,7 @@ char *tokenize(char *input) {
 
     return cleaned;
 }
+
 
 
 int main(void) {
@@ -107,7 +118,7 @@ int main(void) {
 
         args[i] = NULL;
         if (args[0] != NULL && strcmp(args[0], "cd") != 0 && strcmp(args[0], "exit") != 0) {
-            run(args, fd_in, STDOUT_FILENO);
+            run(args);
         }
         free(input);
     }
