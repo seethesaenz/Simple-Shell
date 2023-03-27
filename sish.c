@@ -64,15 +64,15 @@ void piper(char *args[], int size) {
     }
 }
 
-char *tokenize(char *input) {
-    int i;
-    int j = 0;
+char **tokenize(char *input) {
+    int i, j = 0;
     char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
 
     // clean input to allow for easy reading
     for (i = 0; i < strlen(input); i++) {
         if (input[i] == '|') {
             cleaned[j++] = ' ';
+            cleaned[j++] = input[i];
             cleaned[j++] = ' ';
         } else {
             cleaned[j++] = input[i];
@@ -80,13 +80,19 @@ char *tokenize(char *input) {
     }
     cleaned[j++] = '\0';
 
-    char *end;
-    end = cleaned + strlen(cleaned) - 1;
-    end--;
-    *(end + 1) = '\0';
+    char **tokens = (char **) malloc(MAX * sizeof(char *));
+    char *arg = strtok(cleaned, " \n");
+    i = 0;
+    while (arg) {
+        tokens[i++] = arg;
+        arg = strtok(NULL, " \n");
+    }
+    tokens[i] = NULL;
 
-    return cleaned;
+    free(cleaned);
+    return tokens;
 }
+
 
 int main(void) {
     char *args[MAX];
@@ -99,26 +105,25 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char *tokens;
-        tokens = tokenize(input);
+        char **tokens = tokenize(input);
 
-        char *arg = strtok(tokens, " \n");
         int i = 0;
-        while (arg) {
-            if (*arg == '|') {
+        while (tokens[i]) {
+            if (strcmp(tokens[i], "|") == 0) {
                 args[i] = NULL;
                 piper(args, i);
                 i = 0;
             } else {
-                args[i] = arg;
+                args[i] = tokens[i];
                 i++;
             }
-            arg = strtok(NULL, " \n");
         }
         args[i] = NULL;
-        run(args);    
+        run(args);
+
         free(tokens);
         free(input);
     }
+
     return 0;
 }
