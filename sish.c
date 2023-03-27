@@ -95,38 +95,48 @@ char *tokenize(char *input) {
 }
 
 int main(void) {
-    char *args[MAX];
+    char *args1[MAX];
+    char *args2[MAX];
 
     while (flag) {
-        memset(args, 0, sizeof(args));
+        memset(args1, 0, sizeof(args1));
+        memset(args2, 0, sizeof(args2));
 
         printf("sish> ");
 
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-
         char *tokens;
         tokens = tokenize(input);
 
         char *arg = strtok(tokens, " \n");
         int i = 0;
+        int j = 0;
+        int pipe_found = 0;
         while (arg) {
             if (*arg == '|') {
-                args[i] = NULL;
-                piper(args, i);
+                pipe_found = 1;
                 i = 0;
+            } else if (pipe_found) {
+                args2[i] = arg;
+                i++;
             } else {
-                args[i] = arg;
+                args1[i] = arg;
                 i++;
             }
             arg = strtok(NULL, " \n");
         }
-        args[i] = NULL;
-        run(args);    
+        args1[i] = NULL;
+        args2[j] = NULL;
+
+        if (pipe_found) {
+            piper(args1, args2);
+        } else {
+            run(args1);
+        }
 
         free(input);
-
     }
     return 0;
 }
