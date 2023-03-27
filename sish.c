@@ -59,6 +59,7 @@ void piper(char *args[], int size) {
         for(i = 0; i< size; i++){
             args[i] = NULL;
         }
+        args[size] = NULL;
     }
 }
 
