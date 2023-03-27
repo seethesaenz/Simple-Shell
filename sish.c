@@ -104,29 +104,11 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        // check if input contains the pipe character
-        if (strchr(input, '|') != NULL) {
-            // Split input by pipe character
-            char *cmd = strtok(input, "|");
-            while (cmd) {
-                // Tokenize each command individually
-                char *tokens = tokenize(cmd);
-                int i = 0;
-                while (tokens) {
-                    args[i++] = tokens;
-                    tokens = strtok(NULL, " \n");
-                }
-                args[i] = NULL;
-
-                // Run the command
-                piper(args, i);
-
-                // Move on to the next command
-                cmd = strtok(NULL, "|");
-            }
-        } else {
-            // Tokenize input as a single command
-            char *tokens = tokenize(input);
+        // Split input by pipe character
+        char *cmd = strtok(input, "|");
+        while (cmd) {
+            // Tokenize each command individually
+            char *tokens = strtok(cmd, " \n");
             int i = 0;
             while (tokens) {
                 args[i++] = tokens;
@@ -135,7 +117,10 @@ int main(void) {
             args[i] = NULL;
 
             // Run the command
-            run(args);
+            piper(args, i);
+
+            // Move on to the next command
+            cmd = strtok(NULL, "|");
         }
 
         free(input);
@@ -143,5 +128,4 @@ int main(void) {
 
     return 0;
 }
-
 
