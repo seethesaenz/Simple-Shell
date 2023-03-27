@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#define MAX 1024 // max length
+size_t MAX =  1024; // max length
 int flag = 1;
 
 void run(char *args[]) {
