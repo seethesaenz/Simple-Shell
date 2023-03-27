@@ -62,33 +62,29 @@ void piper(char *args[], int size) {
     }
 }
 
-char *tokenize(char *input) {
-    int i;
-    int j = 0;
-    char *cleaned = (char *) malloc((MAX * 2) * sizeof(char));
-
-    // clean input to allow for easy reading
-    for (i = 0; i < strlen(input); i++) {
-        if (input[i] == '|') {
-            cleaned[j++] = ' ';
-            cleaned[j++] = input[i];
-            cleaned[j++] = ' ';
+char **tokenize(char *input) {
+    int i = 0;
+    char **tokens = malloc(MAX * sizeof(char *));
+    char *arg = strtok(input, " \n");
+    while (arg) {
+        if (*arg == '|') {
+            tokens[i] = NULL;
+            i++;
+            tokens[i] = arg;
+            i++;
         } else {
-            cleaned[j++] = input[i];
+            tokens[i] = arg;
+            i++;
         }
+        arg = strtok(NULL, " \n");
     }
-    cleaned[j++] = '\0';
-
-    char *end;
-    end = cleaned + strlen(cleaned) - 1;
-    end--;
-    *(end + 1) = '\0';
-
-    return cleaned;
+    tokens[i] = NULL;
+    return tokens;
 }
 
+
 int main(void) {
-    char *args[MAX];
+    char **args;
 
     while (flag) {
         printf("sish> ");
@@ -96,28 +92,23 @@ int main(void) {
         char *input = malloc(MAX * sizeof(char));
         getline(&input, &MAX, stdin);
 
-        char *tokens;
-        tokens = tokenize(input);
+        args = tokenize(input);
 
-        char *arg = strtok(tokens, " ");
         int i = 0;
-        while (arg) {
-            if (*arg == '|') {
+        while (args[i]) {
+            if (*args[i] == '|') {
                 args[i] = NULL;
                 piper(args, i);
-                i = 0;
+                i++;
             } else {
-                args[i] = arg;
                 i++;
             }
-            arg = strtok(NULL, " ");
         }
-        args[i] = NULL;
 
-        if (args[0] != NULL) {
-            run(args);
-        }
+        run(args);
         free(input);
+        free(args);
     }
     return 0;
 }
+
